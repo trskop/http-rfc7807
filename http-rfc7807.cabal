@@ -1,0 +1,52 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 4ab3af20c3ec25af3c2e69a058974445e6f3dccee9ce274e5f0d94f13f3add7f
+
+name:           http-rfc7807
+version:        0.1.0.0
+synopsis:       RFC7807 style response messages
+
+description:    [RFC7807 — Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807)
+                style response messages.
+                .
+                See [GitHub README](https://github.com/trskop/http-rfc7807#readme) for more
+                information.
+category:       Web, Servant
+homepage:       https://github.com/trskop/http-rfc7807#readme
+bug-reports:    https://github.com/trskop/http-rfc7807/issues
+author:         Peter Trško
+maintainer:     peter.trsko@gmail.com
+copyright:      (c) 2020 Peter Trško
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/trskop/http-rfc7807
+
+library
+  exposed-modules:
+      Network.HTTP.RFC7807
+      Servant.Server.RFC7807
+  other-modules:
+      Paths_http_rfc7807
+  hs-source-dirs:
+      src
+  default-extensions: BlockArguments DeriveGeneric DerivingStrategies DuplicateRecordFields FlexibleContexts FlexibleInstances InstanceSigs LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings RecordWildCards ScopedTypeVariables TypeApplications
+  ghc-options: -Wall -Wcompat
+  build-depends:
+      aeson
+    , base >=4.12 && <5
+    , http-media
+    , http-types
+    , servant >=0.16
+    , servant-server >=0.16
+    , text
+  default-language: Haskell2010

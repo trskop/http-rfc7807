@@ -1,0 +1,73 @@
+name: &this http-rfc7807
+version: 0.1.0.0
+synopsis: |
+  RFC7807 style response messages
+description: |
+  [RFC7807 — Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807)
+  style response messages.
+
+  See [GitHub README](https://github.com/trskop/http-rfc7807#readme) for more
+  information.
+
+github: trskop/http-rfc7807
+license: BSD3
+license-file: LICENSE
+author: Peter Trško
+maintainer: peter.trsko@gmail.com
+copyright: (c) 2020 Peter Trško
+category: Web, Servant
+
+extra-source-files:
+  - README.md
+
+default-extensions:
+  - BlockArguments
+  - DeriveGeneric
+  - DerivingStrategies
+  - DuplicateRecordFields
+  - FlexibleContexts
+  - FlexibleInstances
+  - InstanceSigs
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NamedFieldPuns
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - RecordWildCards
+  - ScopedTypeVariables
+  - TypeApplications
+
+dependencies:
+  - base >=4.12 && <5
+  # ^ Version 4.12.0.0 is bundled with 8.6.*, we support GHC 8.6.5 for static
+  # build.
+
+ghc-options: ["-Wall", "-Wcompat"]
+
+library:
+  source-dirs: src
+
+  dependencies:
+    - aeson
+    - http-types
+    - http-media
+    - servant >=0.16
+    # ^ Version bounds to match servant-server.
+    - servant-server >=0.16
+    # ^ ServantErr was renamed to ServerError in version 0.16.
+    - text
+
+#tests:
+#  command-wrapper-tests:
+#    source-dirs: test
+#    main: Main.hs
+#    dependencies:
+#      - *this
+#
+#      - Glob >=0.10.0 && <1
+#      - call-stack
+#      - deepseq
+#      - tasty
+#      - tasty-hunit
+#      - tasty-program
+#    ghc-options: ["-threaded", "-rtsopts", "-with-rtsopts=-N"]

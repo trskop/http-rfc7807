@@ -13,6 +13,13 @@ module Network.HTTP.RFC7807
     (
       Rfc7807Error(..)
     , rfc7807Error
+
+    -- * Encoding and Decoding
+    --
+    -- | Useful for defining your own encoding\/decoding instances.
+    , ExtensionField(..)
+    , EncodingOptions(..)
+    , defaultEncodingOptions
     , toKeyValue
     , parseJSON
 

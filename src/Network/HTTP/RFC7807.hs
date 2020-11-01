@@ -536,7 +536,7 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 -- instance 'Aeson.ToJSON' ErrorType where
 --     toJSON = \\case
 --         DocumentNotFound ->
---             'Aeson.Text' \"https:\/\/example.com\/docs\/error#document-not-found\"
+--             'Aeson.String' \"https:\/\/example.com\/docs\/error#document-not-found\"
 --         {- ... -}
 -- @
 --
@@ -557,7 +557,7 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --         DocumentNotFound ->
 --             -- The URL doesn't have to be absolute. See description of
 --             -- 'type_' field of 'Rfc7807Error' for more information.
---             'Aeson.Text' \"https:\/\/example.com\/docs\/error#document-not-found\"
+--             'Aeson.String' \"https:\/\/example.com\/docs\/error#document-not-found\"
 --         {- ... -}
 -- @
 

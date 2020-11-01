@@ -15,14 +15,15 @@ module Servant.Server.RFC7807
     -- $intro
       rfc7807ServerError
 
-    -- * @ProblemJSON@ Mime Type
+    -- * Mime Type @application\/problem+json@
     , ProblemJSON
 
     -- * Re-exported
     --
     -- | When using 'Rfc7807Error' in more complex way, please, depend on
     -- "Network.HTTP.RFC7807" module directly. More information and more
-    -- detailed usage example see "Network.HTTP.RFC7807" module doucmentation.
+    -- detailed usage examples can be found in "Network.HTTP.RFC7807" module
+    -- documentation.
     , Rfc7807Error(..)
     )
   where
@@ -50,7 +51,8 @@ import Network.HTTP.RFC7807 (Rfc7807Error(..), rfc7807Error)
 -- <https://tools.ietf.org/html/rfc7807#section-6.1 RFC7807>:
 -- @application/problem+json@
 --
--- The way how this mime type is handled is the same as 'JSON'.
+-- The way how this mime type is handled is the same as
+-- 'Servant.API.ContentTypes.JSON'.
 data ProblemJSON
 
 -- TODO: This mime type is specifically designed for RFC7807 representation.
@@ -70,8 +72,7 @@ instance Aeson.ToJSON a => MimeRender ProblemJSON a where
 instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
     mimeUnrender _ = eitherDecodeLenient
 
--- | Construct Servant 'ServerError' with @application/problem+json@ content
--- type and body as described in <https://tools.ietf.org/html/rfc7807 RFC7807>.
+-- | Construct Servant 'ServerError' with RFC7807 style response body.
 --
 -- By using Servant abstractions (like 'MimeRender' and 'Accept') we are able
 -- to easily integrate with existing code bases.
@@ -86,7 +87,7 @@ instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
 -- instance 'Aeson.ToJSON' ErrorType where
 --     'Aeson.toJSON' = \\case
 --         ValidationError ->
---              Aeson.String \"/errors#validation-error\"
+--              'Aeson.String' \"/errors#validation-error\"
 --
 -- {- ... -} = do
 --     {- ... -}
@@ -100,7 +101,8 @@ rfc7807ServerError
     :: (MimeRender ctype body)
     => Proxy ctype
     -- ^ Media type to use when encoding the error response body. This allows
-    -- us to select appropriate mime type, e.g. 'JSON' or 'ProblemJSON'.
+    -- us to select appropriate mime type, e.g. 'Servant.API.ContentTypes.JSON'
+    -- or 'ProblemJSON'.
     -> ServerError
     -- ^ One of Servant error values e.g. 'err400'.
     -> errorType

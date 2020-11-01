@@ -1,6 +1,6 @@
 -- |
 -- Module:      Servant.Server.RFC7807
--- Description: RFC7807 style error response messages.
+-- Description: Servant support for RFC7807 style error response messages.
 -- Copyright:   (c) 2020 Peter Trško
 -- License:     BSD3
 --
@@ -8,9 +8,15 @@
 -- Stability:   experimental
 -- Portability: GHC specific language extensions.
 --
--- <https://tools.ietf.org/html/rfc7807 RFC7807> style error response messages.
+-- Servant support for [RFC7807 — Problem Details for HTTP APIs
+-- ](https://tools.ietf.org/html/rfc7807) style response messages.
 module Servant.Server.RFC7807
-    ( rfc7807ServerError
+    (
+    -- $intro
+      rfc7807ServerError
+
+    -- * @ProblemJSON@ Mime Type
+    , ProblemJSON
 
     -- * Re-exported
     --
@@ -67,6 +73,11 @@ instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
 -- | Construct Servant 'ServerError' with @application/problem+json@ content
 -- type and body as described in <https://tools.ietf.org/html/rfc7807 RFC7807>.
 --
+-- By using Servant abstractions (like 'MimeRender' and 'Accept') we are able
+-- to easily integrate with existing code bases.
+--
+-- === Usage Example
+--
 -- @
 -- data ErrorType
 --     = ValidationError
@@ -113,3 +124,13 @@ rfc7807ServerError ctype serverError@ServerError{errHTTPCode, errHeaders} t f =
             <>  [ (hContentType, renderHeader (contentType ctype))
                 ]
         }
+
+-- $intro
+--
+-- The main functionality of this module is 'rfc7807ServerError', which allows
+-- us to create Servant's 'ServerError' values with RFC7807 style body.
+-- Implementation is more abstract than strictly necessary to account for the
+-- fact that @application/problem+json@ may not always be the best mime type to
+-- use. This is especially true if we are migrating existing error responses.
+-- Another benefit of the abstract way it's defined is that we can potentially
+-- use different encoding or serialisation libraries.

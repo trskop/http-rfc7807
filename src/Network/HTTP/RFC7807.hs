@@ -299,7 +299,8 @@ toKeyValue EncodingOptions{..} Rfc7807Error{..} = mconcat
 
 -- | Decode 'Rfc7807Error' using default 'EncodingOptions':
 -- @
--- Aeson.parseJSON = 'parseJSON' 'defaultEncodingOptions'
+-- 'Aeson.parseJSON' = Aeson.withObject \"Rfc7807Error\" \\o ->
+--     'parseJSON' 'defaultEncodingOptions' o
 -- @
 instance
     ( Aeson.FromJSON errorType
@@ -314,51 +315,49 @@ instance
     parseJSON
         :: Aeson.Value
         -> Aeson.Parser (Rfc7807Error errorType errorInfo context)
-    parseJSON = parseJSON defaultEncodingOptions
+    parseJSON = Aeson.withObject typeName (parseJSON defaultEncodingOptions)
+      where
+        typeName :: String
+        typeName =
+            show (typeRep (Proxy @(Rfc7807Error errorType errorInfo context)))
 
--- | Parse JSON value into 'Rfc7807Error'.
+-- | Parse JSON value into 'Rfc7807Error'. Reason for taking 'Aeson.Object'
+-- instead of 'Aeson.Value' is that it allows us to define serialisation for
+-- our own data types with extra fields without while keeping RFC7807
+-- structure.
 parseJSON
     :: forall errorType errorInfo context
     .   ( Aeson.FromJSON errorType
         , Aeson.FromJSON errorInfo
         , Aeson.FromJSON context
-        , Typeable errorType
-        , Typeable errorInfo
-        , Typeable context
         )
     => EncodingOptions
-    -> Aeson.Value
+    -> Aeson.Object
     -> Aeson.Parser (Rfc7807Error errorType errorInfo context)
-parseJSON EncodingOptions{omitExtensionField, extensionFieldName} =
-    Aeson.withObject typeName \o -> do
-        type_ <- o .: "type"
-        title <- o .:? "title"
-        status <- o .:? "status"
-        detail <- o .:? "detail"
-        instance_ <- o .:? "instance"
-        error_ <- extField o ErrorField
-        context <- extField o ContextField
+parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
+    type_ <- o .: "type"
+    title <- o .:? "title"
+    status <- o .:? "status"
+    detail <- o .:? "detail"
+    instance_ <- o .:? "instance"
+    error_ <- extField ErrorField
+    context <- extField ContextField
 
-        pure Rfc7807Error
-            { type_
-            , title
-            , status
-            , detail
-            , instance_
-            , error_
-            , context
-            }
+    pure Rfc7807Error
+        { type_
+        , title
+        , status
+        , detail
+        , instance_
+        , error_
+        , context
+        }
   where
-    typeName :: String
-    typeName =
-        show (typeRep (Proxy @(Rfc7807Error errorType errorInfo context)))
-
     extField
         :: Aeson.FromJSON a
-        => Aeson.Object
-        -> ExtensionField
+        => ExtensionField
         -> Aeson.Parser (Maybe a)
-    extField o name
+    extField name
       | omitExtensionField name = pure Nothing
       | otherwise               = o .:? extensionFieldName name
 

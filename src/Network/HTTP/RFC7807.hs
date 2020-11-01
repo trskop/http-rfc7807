@@ -8,7 +8,8 @@
 -- Stability:   experimental
 -- Portability: GHC specific language extensions.
 --
--- <https://tools.ietf.org/html/rfc7807 RFC7807> style response messages.
+-- [RFC7807 — Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807)
+-- style response messages.
 module Network.HTTP.RFC7807
     (
       Rfc7807Error(..)
@@ -23,9 +24,9 @@ module Network.HTTP.RFC7807
     , toKeyValue
     , parseJSON
 
-    -- * Usage Example
+    -- * Usage Examples
     --
-    -- $newtypeExample
+    -- $usageExamples
     )
   where
 
@@ -48,8 +49,42 @@ import qualified Data.Aeson.Types as Aeson (Parser)
 import Data.Text (Text)
 
 
--- | Based on <https://tools.ietf.org/html/rfc7807 RFC7807> with few additional
--- fields.
+-- | Based on [RFC7807](https://tools.ietf.org/html/rfc7807) with few
+-- additional fields (@'error_' :: errorInfo@ and @'context' :: context@).
+--
+-- Meaning of individual type parameters:
+--
+-- [@errorType@]: Represents an URI reference. Easiest to start with is just
+--   using 'Text' type; simplest and most extensible is defining an enum with a
+--   'Aeson.ToJSON':
+--   @
+--   data ErrorType
+--       = DocumentNotFound
+--       | DocumentAccessForbidden
+--       {- ... -}
+--
+--   instance 'Aeson.ToJSON' ErrorType where
+--       toJSON = \\case
+--           DocumentNotFound ->
+--               mkUrl \"document-not-found\"
+--           DocumentAccessForbidden ->
+--               mkUrl \"document-access-forbidden\"
+--           {- ... -}
+--         where
+--           mkUrl t = 'Aeson.Text' (\"https://example.com/docs/error#\" <> t)
+--   @
+--
+-- [@errorInfo@]: Not defined by RFC7807. This type is intended to provide a
+--   different representation of the error. This is very useful when you're
+--   retrofitting RFC7807 style messages into an existing error reporting.
+--   Another common use case is when client needs to understand the error
+--   response. For example, form validation errors that need to be displayed in
+--   context of the element that failed validation. If you're not using this
+--   you can set the type to @()@.
+--
+-- [@context@]: Not defined by RFC3986. This type is intended to provide more
+--   details\/context to what has happened. For example, IDs of entities that
+--   were involved. If you're not using this you can set the type to @()@.
 data Rfc7807Error errorType errorInfo context = Rfc7807Error
     { type_ :: errorType
     -- ^ (required) A URI reference
@@ -141,6 +176,13 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
 
 -- | Constructor for 'Rfc7807Error' that set's only 'type_' and everything else
 -- is set to 'Nothing'.
+--
+-- Usage example that illustrates how the function is used, not necessarily the
+-- best error response you can provide to your client:
+--
+-- @
+-- ('rfc7807Error' \"/errors#not-found\"){'status' = 404}
+-- @
 rfc7807Error :: errorType -> Rfc7807Error errorType errorInfo context
 rfc7807Error type_ = Rfc7807Error
     { type_
@@ -154,6 +196,9 @@ rfc7807Error type_ = Rfc7807Error
 
 -- | Enum representing the extension fields 'error_' and 'context' that are not
 -- defined by RFC7807.
+--
+-- This allows us to reference the field in 'EncodingOptions' and later in
+-- 'toKeyValue' and 'parseJSON' without resolving to using 'Text'.
 data ExtensionField
     = ErrorField
     -- ^ Represents the name of the 'error_' field of 'Rfc7807Error' data type.
@@ -165,8 +210,8 @@ data ExtensionField
 
 -- | Encode 'Rfc7807Error' using default 'EncodingOptions':
 -- @
--- Aeson.toJSON v = Aeson.object ('toKeyValue' 'defaultEncodingOptions' v)
--- Aeson.toEncoding v = Aeson.pairs ('toKeyValue' 'defaultEncodingOptions' v)
+-- 'Aeson.toJSON' v = 'Aeson.Object' ('toKeyValue' 'defaultEncodingOptions' v)
+-- 'Aeson.toEncoding' v = 'Aeson.pairs' ('toKeyValue' 'defaultEncodingOptions' v)
 -- @
 instance
     ( Aeson.ToJSON errorType
@@ -363,12 +408,16 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 
 -- }}} JSON Decoding ----------------------------------------------------------
 
--- $newtypeExample
+-- $usageExamples
 --
--- While it is possible to use 'Rfc7807Error' directly, using newtype allows to
--- be more flexible with how things are encoded.
+-- == Type Alias
+--
+-- The easiest way how to use 'Rfc7807Error' data type without always needing
+-- to pass all the type arguments is by creating a type alias like this:
 --
 -- @
+-- type ErrorResponse = 'Rfc7807Error' ErrorType () ()
+--
 -- data ErrorType
 --     = DocumentNotFound
 --     {- ... -}
@@ -378,6 +427,18 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --         DocumentNotFound ->
 --             'Aeson.Text' \"https://example.com/docs/error#document-not-found\"
 --         {- ... -}
+-- @
+--
+-- == Newtype
+--
+-- While it is possible to use 'Rfc7807Error' directly, using newtype allows to
+-- be more flexible with how things are encoded. If you're expecting your use
+-- cases to evolve over time it is good to start with something like this:
+--
+-- @
+-- -- | See \"Type Alias\" section for \@ErrorType\@ example.
+-- data ErrorType
+--   = {- ... -}
 --
 -- newtype ErrorResponse = ErrorResponse
 --     { errorResponse :: 'Rfc7807Error' ErrorType () ()
@@ -396,6 +457,51 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --
 -- instance 'Aeson.FromJSON' ErrorResponse where
 --     'Aeson.parseJSON' :: ErrorResponse -> 'Aeson.Value'
---     'Aeson.parseJSON' =
---          ErrorResponse <$> 'parseJSON' errorResponseEncodingOptions
+--     'Aeson.parseJSON' = 'Aeson.withObject' \"ErrorResponse\" \\o ->
+--          ErrorResponse <$> 'parseJSON' errorResponseEncodingOptions o
 -- @
+--
+-- == Extra Fields Example
+--
+-- This is an elaboration of the previous \"Newtype\" example. We will use
+-- @errorInfo@ and @context@ type arguments of 'Rfc7807Error' to include more
+-- information. The @errorInfo@ will be kept polymorphic so that each HTTP
+-- response can use a different one, depending on its needs.
+--
+-- @
+-- -- | See \"Type Alias\" section for \@ErrorType\@ example.
+-- data ErrorType
+--   = {- ... -}
+--
+-- -- | We can use a concrete data type or we can use something flexible like
+-- -- 'Aeson.Object' (actually a \@HashMap Text 'Aeson.Value'\@) allowing us to
+-- -- include any kind of metadata.
+-- --
+-- -- This approach intentionally resembles structured logging approach like
+-- -- the one used by [katip](https://hackage.haskell.org/package/katip) library.
+-- type ErrorContext = 'Aeson.Object'
+--
+-- newtype ErrorResponse e = ErrorResponse
+--     { errorResponse :: 'Rfc7807Error' ErrorType e ErrorContext
+--     }
+--
+-- errorResponseEncodingOptions :: 'EncodingOptions'
+-- errorResponseEncodingOptions = 'defaultEncodingOptions'
+--
+-- instance 'Aeson.ToJSON' => 'Aeson.ToJSON' (ErrorResponse e) where
+--     'Aeson.toJSON' :: ErrorResponse -> 'Aeson.Value'
+--     'Aeson.toJSON' ErrorResponse{..} =
+--          'Aeson.object' . 'toKeyValue' errorResponseEncodingOptions
+--     {- ... -}
+--
+-- instance 'Aeson.FromJSON' e => 'Aeson.FromJSON' (ErrorResponse e) where
+--     'Aeson.parseJSON' :: ErrorResponse -> 'Aeson.Value'
+--     'Aeson.parseJSON' = 'Aeson.withObject' \"ErrorResponse\" \\o ->
+--          ErrorResponse <$> 'parseJSON' errorResponseEncodingOptions o
+-- @
+--
+-- At this point we may want to provide few helper functions for constructing
+-- @ErrorResponse@ (also known as smart constructors) to fit in nicely with the
+-- rest of our code base and HTTP framework we are using. You may want to look
+-- at "Servant.RFC7807" module, even if you're using a different framework. It
+-- should give you few ideas on how to proceed.

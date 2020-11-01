@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4ab3af20c3ec25af3c2e69a058974445e6f3dccee9ce274e5f0d94f13f3add7f
+-- hash: 0ae45adc4c8d16018678510e830a0ff221c55a3fac30ee9228e8eaa479bf1769
 
 name:           http-rfc7807
 version:        0.1.0.0
@@ -49,4 +49,21 @@ library
     , servant >=0.16
     , servant-server >=0.16
     , text
+  default-language: Haskell2010
+
+test-suite command-wrapper-tests
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_http_rfc7807
+  hs-source-dirs:
+      test
+  default-extensions: BlockArguments DeriveGeneric DerivingStrategies DuplicateRecordFields FlexibleContexts FlexibleInstances InstanceSigs LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings RecordWildCards ScopedTypeVariables TypeApplications
+  ghc-options: -Wall -Wcompat -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.12 && <5
+    , call-stack
+    , http-rfc7807
+    , tasty
+    , tasty-hunit
   default-language: Haskell2010

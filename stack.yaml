@@ -7,5 +7,7 @@ resolver:
 packages:
   - .
 
-# extra-deps: []
+extra-deps:
+  - hspec-expectations-json-1.0.0.0
+
 # flags: {}

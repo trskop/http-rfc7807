@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: hspec-expectations-json-1.0.0.0@sha256:0a846be347980f80beb3f8d4b5ed8349c4a3d1b9cb1098b07b3773dd3dc916c2,3651
+    pantry-tree:
+      size: 614
+      sha256: 8937972bda683e53b7f36a32e7a07cb08402eb4f900b3583d0b11f69efc23c9d
+  original:
+    hackage: hspec-expectations-json-1.0.0.0
 snapshots:
 - completed:
     size: 532177

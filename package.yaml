@@ -64,7 +64,12 @@ tests:
     dependencies:
       - *this
 
+      - aeson
       - call-stack
+      - hspec-expectations-json
+      - quickcheck-instances
       - tasty
       - tasty-hunit
+      - tasty-quickcheck
+      - text
     ghc-options: ["-threaded", "-rtsopts", "-with-rtsopts=-N"]

@@ -1,6 +1,6 @@
 -- |
 -- Module:      Servant.Server.RFC7807
--- Description: Servant support for RFC7807 style error response messages.
+-- Description: Servant support for RFC7807 style error response messages
 -- Copyright:   (c) 2020 Peter Trško
 -- License:     BSD3
 --

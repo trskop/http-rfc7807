@@ -12,13 +12,13 @@ Transfer-Encoding: chunked
 Date: Sun, 01 Nov 2020 22:28:42 GMT
 Server: Warp/3.3.13
 Content-Type: application/problem+json;charset=utf-8
-Content-Length: 250
+Content-Length: 251
 
 {
   "type": "https://example.com/docs/error#upload-to-missing-file",
   "title": "File resource doesn't exist",
   "status": 404,
-  "detail": "Cannot upload file content to a non-existent file."
+  "detail": "Cannot upload file content to a non-existent file.",
   "documentId": "ae095978-2f7c-47aa-84dd-220be55195a5"
 }
 ```

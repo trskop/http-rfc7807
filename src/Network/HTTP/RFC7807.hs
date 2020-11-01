@@ -1,6 +1,6 @@
 -- |
 -- Module:      Network.HTTP.RFC7807
--- Description: RFC7807 style response messages.
+-- Description: RFC7807 style response messages
 -- Copyright:   (c) 2020 Peter Trško
 -- License:     BSD3
 --

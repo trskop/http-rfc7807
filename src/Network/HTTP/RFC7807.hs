@@ -12,21 +12,47 @@
 -- style response messages.
 module Network.HTTP.RFC7807
     (
+    -- $intro
       Rfc7807Error(..)
     , rfc7807Error
 
     -- * Encoding and Decoding
     --
-    -- | Useful for defining your own encoding\/decoding instances.
-    , ExtensionField(..)
+    -- | #encoding-and-decoding# Definitions in this section are useful for
+    -- defining your own JSON encoding\/decoding. See [Usage Examples section
+    -- ](#usage-examples) for ideas on how to use them.
+    --
+    -- What's provided in here are:
+    --
+    -- * Function 'toKeyValue' for generic serialisation of 'Rfc7807Error' into
+    --   JSON object representation.
+    --
+    -- * Function 'parseObject' for parsing JSON 'Aeson.Object' (key-value map)
+    --   into 'Rfc7807Error'.
+    --
+    -- * Parameters that modify behaviour of 'toKeyValue' and 'parseObject:
+    --   'EncodingOptions', 'defaultEncodingOptions', and 'ExtensionField'.
+    , toKeyValue
+    , parseObject
     , EncodingOptions(..)
     , defaultEncodingOptions
-    , toKeyValue
-    , parseJSON
+    , ExtensionField(..)
 
     -- * Usage Examples
     --
     -- $usageExamples
+
+    -- ** Type Alias
+    --
+    -- $usageExamplesTypeAlias
+
+    -- ** Newtype
+    --
+    -- $usageExamplesNewtype
+
+    -- ** Extra Fields Example
+    --
+    -- $usageExamplesExtraFieldsExample
     )
   where
 
@@ -50,29 +76,14 @@ import Data.Text (Text)
 
 
 -- | Based on [RFC7807](https://tools.ietf.org/html/rfc7807) with few
--- additional fields (@'error_' :: errorInfo@ and @'context' :: context@).
+-- additional fields @'error_' :: errorInfo@ and @'context' :: context@.
 --
 -- Meaning of individual type parameters:
 --
 -- [@errorType@]: Represents an URI reference. Easiest to start with is just
 --   using 'Text' type; simplest and most extensible is defining an enum with a
---   'Aeson.ToJSON':
---   @
---   data ErrorType
---       = DocumentNotFound
---       | DocumentAccessForbidden
---       {- ... -}
---
---   instance 'Aeson.ToJSON' ErrorType where
---       toJSON = \\case
---           DocumentNotFound ->
---               mkUrl \"document-not-found\"
---           DocumentAccessForbidden ->
---               mkUrl \"document-access-forbidden\"
---           {- ... -}
---         where
---           mkUrl t = 'Aeson.Text' (\"https://example.com/docs/error#\" <> t)
---   @
+--   'Aeson.ToJSON', see [Usage Examples section](#usage-examples) for an enum
+--   example.
 --
 -- [@errorInfo@]: Not defined by RFC7807. This type is intended to provide a
 --   different representation of the error. This is very useful when you're
@@ -87,12 +98,12 @@ import Data.Text (Text)
 --   were involved. If you're not using this you can set the type to @()@.
 data Rfc7807Error errorType errorInfo context = Rfc7807Error
     { type_ :: errorType
-    -- ^ (required) A URI reference
-    -- <https://tools.ietf.org/html/rfc3986 [RFC3986]> that identifies the
+    -- ^ (__required__) A URI reference
+    -- (see [RFC3986](https://tools.ietf.org/html/rfc3986)) that identifies the
     -- problem type.  This specification encourages that, when dereferenced, it
     -- provide human-readable documentation for the problem type (e.g., using
-    -- HTML
-    -- <https://tools.ietf.org/html/rfc7807#ref-W3C.REC-html5-20141028 [W3C.REC-html5-20141028]>).
+    -- HTML [W3C.REC-html5-20141028
+    -- ](https://tools.ietf.org/html/rfc7807#ref-W3C.REC-html5-20141028)).
     -- When this member is not present, its value is assumed to be
     -- @\"about:blank\"@.
     --
@@ -103,34 +114,40 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
     -- Consumers SHOULD NOT automatically dereference the type URI.
     --
     -- Relative URIs are accepted; this means that they must be resolved
-    -- relative to the document's base URI, as per
-    -- <https://tools.ietf.org/html/rfc3986#section-5 [RFC3986], Section 5>.
+    -- relative to the document's base URI, as per [RFC3986, Section 5
+    -- ](https://tools.ietf.org/html/rfc3986#section-5).
     --
-    -- In JSON this filed ins named only @\"type\"@.
+    -- === Notes:
+    --
+    -- In JSON this filed is named only @\"type\"@.
 
     , title :: Maybe Text
-    -- ^ (optional) A short, human-readable summary of the problem type.  It
+    -- ^ (__optional__) A short, human-readable summary of the problem type. It
     -- SHOULD NOT change from occurrence to occurrence of the problem, except
     -- for purposes of localization (e.g., using proactive content negotiation;
-    -- see
-    -- <https://tools.ietf.org/html/rfc7231#section-3.4 [RFC7231], Section 3.4>).
+    -- see [RFC7231, Section 3.4
+    -- ](https://tools.ietf.org/html/rfc7231#section-3.4).
     --
     -- Consumers MUST use the @\"type\"@ string as the primary identifier for
     -- the problem type; the @\"title\"@ string is advisory and included only
     -- for users who are not aware of the semantics of the URI and do not
     -- have the ability to discover them (e.g., offline log analysis).
     -- Consumers SHOULD NOT automatically dereference the type URI.
+    --
+    -- === Notes:
+    --
+    -- In JSON this filed is named @\"title\"@.
 
     , status :: Maybe Int
-    -- ^ (optional) The HTTP status code
-    -- (<https://tools.ietf.org/html/rfc7231#section-6 [RFC7231], Section 6>)
-    -- generated by the origin server for this occurrence of the problem.
+    -- ^ (__optional__) The HTTP status code (see [RFC7231, Section 6
+    -- ](https://tools.ietf.org/html/rfc7231#section-6)) generated by the
+    -- origin server for this occurrence of the problem.
     --
     -- If present, is only advisory; it conveys the HTTP status code used for
     -- the convenience of the consumer.  Generators MUST use the same status
     -- code in the actual HTTP response, to assure that generic HTTP software
     -- that does not understand this format still behaves correctly.  See
-    -- <https://tools.ietf.org/html/rfc7807#section-5 [RFC7807], Section 5> for
+    -- [RFC7807, Section 5](https://tools.ietf.org/html/rfc7807#section-5) for
     -- further caveats regarding its use.
     --
     -- Consumers can use the status member to determine what the original
@@ -138,36 +155,53 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
     -- changed (e.g., by an intermediary or cache), and when message bodies
     -- persist without HTTP information.  Generic HTTP software will still use
     -- the HTTP status code.
+    --
+    -- === Notes:
+    --
+    -- In JSON this filed is named @\"status\"@.
 
     , detail :: Maybe Text
-    -- ^ (optional) A human-readable explanation specific to this occurrence of
-    -- the problem.
+    -- ^ (__optional__) A human-readable explanation specific to this
+    -- occurrence of the problem.
     --
     -- If present, ought to focus on helping the client correct the problem,
     -- rather than giving debugging information.  Consumers SHOULD NOT parse
     -- the "detail" member for information; extensions are more suitable and
     -- less error-prone ways to obtain such information.
+    --
+    -- === Notes:
+    --
+    -- In JSON this filed is named @\"detail\"@.
 
     , instance_ :: Maybe Text
-    -- ^ A URI reference that identifies the specific occurrence of the
-    -- problem.  It may or may not yield further information if dereferenced.
+    -- ^ (__optional__) A URI reference that identifies the specific occurrence
+    -- of the problem.  It may or may not yield further information if
+    -- dereferenced.
     --
     -- Relative URIs are accepted; this means that they must be resolved
-    -- relative to the document's base URI, as per
-    -- <https://tools.ietf.org/html/rfc3986#section-5 [RFC3986], Section 5>.
+    -- relative to the document's base URI, as per [RFC3986, Section 5
+    -- ](https://tools.ietf.org/html/rfc3986#section-5).
+    --
+    -- === Notes:
     --
     -- In JSON this filed ins named only @\"instance\"@.
 
     , error_ :: Maybe errorInfo
-    -- ^ (optional, extension) An additional representation of the error.  Lots
-    -- of clients detect that the response is an error using simple algorithm
-    -- of checking presence of the field @\"error\"@ that has non-@null@ value.
+    -- ^ (__optional__, __extension__) An additional representation of the
+    -- error.  Lots of clients detect that the response is an error using
+    -- simple algorithm of checking presence of the field @\"error\"@ that has
+    -- non-@null@ value.
+    --
+    -- === Notes:
     --
     -- How the field is named in the resulting JSON object is controlled by
     -- 'extensionFieldName', but by default it is @\"error\"@.
 
     , context :: Maybe context
-    -- ^ (optional, extension) Extra information for the purposes of debugging.
+    -- ^ (__optional__, __extension__) Extra information for the purposes of
+    -- debugging.
+    --
+    -- === Notes:
     --
     -- How the field is named in the resulting JSON object is controlled by
     -- 'extensionFieldName', but by default it is @\"context\"@.
@@ -177,8 +211,10 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
 -- | Constructor for 'Rfc7807Error' that set's only 'type_' and everything else
 -- is set to 'Nothing'.
 --
--- Usage example that illustrates how the function is used, not necessarily the
--- best error response you can provide to your client:
+-- === Usage Example
+--
+-- This example illustrates how the function is used, not necessarily the best
+-- error response you can provide to your client:
 --
 -- @
 -- ('rfc7807Error' \"/errors#not-found\"){'status' = 404}
@@ -198,7 +234,7 @@ rfc7807Error type_ = Rfc7807Error
 -- defined by RFC7807.
 --
 -- This allows us to reference the field in 'EncodingOptions' and later in
--- 'toKeyValue' and 'parseJSON' without resolving to using 'Text'.
+-- 'toKeyValue' and 'parseObject' without resolving to using 'Text'.
 data ExtensionField
     = ErrorField
     -- ^ Represents the name of the 'error_' field of 'Rfc7807Error' data type.
@@ -208,11 +244,7 @@ data ExtensionField
 
 -- {{{ JSON Encoding ----------------------------------------------------------
 
--- | Encode 'Rfc7807Error' using default 'EncodingOptions':
--- @
--- 'Aeson.toJSON' v = 'Aeson.Object' ('toKeyValue' 'defaultEncodingOptions' v)
--- 'Aeson.toEncoding' v = 'Aeson.pairs' ('toKeyValue' 'defaultEncodingOptions' v)
--- @
+-- | Encode using @'toKeyValue' 'defaultEncodingOptions'@.
 instance
     ( Aeson.ToJSON errorType
     , Aeson.ToJSON errorInfo
@@ -229,40 +261,53 @@ instance
 -- is encoded\/decoded to\/from JSON.
 data EncodingOptions = EncodingOptions
     { omitNothingFields :: Bool
-    -- ^ If set to @True@ (default), record fields of 'Rfc7807Error' with a
-    -- 'Nothing' value will be omitted from the resulting object instead of
+    -- ^ Should empty fields be omitted in the JSON representation?
+    --
+    -- [If set to @True@ (default)]: then record fields of 'Rfc7807Error' with
+    -- a 'Nothing' value will be omitted from the resulting object instead of
     -- being represented as @null@.
     --
-    -- If set to @False@, the resulting JSON object will include those fields
-    -- and the 'Nothing' value will be mapped to @null@ JSON value.
+    -- [If set to @False@]: then the resulting JSON object will include those
+    -- fields and the 'Nothing' value will be mapped to @null@ JSON value.
     --
-    -- This setting is ignored by 'parse' function as respecting it would mean
-    -- that even valid RFC7807 messages would fail to parse.
+    -- === Notes:
+    --
+    -- This setting is ignored by 'parseObject' function as respecting it would
+    -- mean that even valid RFC7807 messages would fail to parse.
 
     , omitExtensionField :: ExtensionField -> Bool
-    -- ^ If the function returns @True@ then the specified record field of
+    -- ^ Should specified extension field be omitted in the JSON
+    -- representation?
+    --
+    -- [If the function returns @True@]: then the specified record field of
     -- 'Rfc7807Error' will be omitted entirely even if it contains
     -- 'Data.Maybe.Just' value.
     --
-    -- If the function returns @False@ then the specified record field is
+    -- [If the function returns @False@]: then the specified record field is
     -- included in the serialised output. However, if the value of that field
     -- is 'Nothing' and 'omitNothingFields' is set to @True@ then the field
     -- will once again be omitted from the resulting JSON object.
+    --
+    -- === Notes:
     --
     -- This setting can be used in a similar fashion as verbosity level. For
     -- example, we can omit these fields on production and have them enabled
     -- in testing or dev environments.
     --
-    -- This setting is respected by 'parse' function, which will ignore
+    -- This setting is respected by 'parseObject' function, which will ignore
     -- extension fields for which the function returns @True@. Ignored
     -- extension fields will always be set to 'Nothing'.
 
     , extensionFieldName :: ExtensionField -> Text
+    -- ^ How should the extension fields be named?
+    --
     -- Fields 'error_' and 'context' are not defined by RFC7807 and as such
     -- their names may be adjusted depending on our particular needs and
     -- conventions. This function allows exactly that.
     --
-    -- This setting is respected by 'parse' function, which will use this
+    -- === Notes:
+    --
+    -- This setting is respected by 'parseObject' function, which will use this
     -- function when searching for extension fields in a JSON object.
     }
   deriving stock (Generic)
@@ -284,8 +329,10 @@ defaultEncodingOptions = EncodingOptions
         ContextField -> "context"
     }
 
--- | Serialise 'Rfc7807Error' into a key-value pairs. This an abstract way how
--- to support both types of Aeson encodings.
+-- | Serialise 'Rfc7807Error' into a key-value pairs. It's abstract to support
+-- both types of Aeson encodings ('Aeson.Object' and 'Aeson.Encoding') at once.
+--
+-- === Usage Examples
 --
 -- @
 -- 'Aeson.Object' . 'toKeyValue' 'defaultEncodingOptions'
@@ -295,7 +342,9 @@ defaultEncodingOptions = EncodingOptions
 --         )
 --     => 'Rfc7807Error' errorType errorInfo context
 --     -> 'Aeson.Value'
+-- @
 --
+-- @
 -- 'Aeson.pairs' . 'toKeyValue' 'defaultEncodingOptions'
 --     ::  ( 'Aeson.ToJSON' errorType
 --         , 'Aeson.ToJSON' errorInfo
@@ -342,11 +391,7 @@ toKeyValue EncodingOptions{..} Rfc7807Error{..} = mconcat
 
 -- {{{ JSON Decoding ----------------------------------------------------------
 
--- | Decode 'Rfc7807Error' using default 'EncodingOptions':
--- @
--- 'Aeson.parseJSON' = Aeson.withObject \"Rfc7807Error\" \\o ->
---     'parseJSON' 'defaultEncodingOptions' o
--- @
+-- | Decode using @'parseObject' 'defaultEncodingOptions'@.
 instance
     ( Aeson.FromJSON errorType
     , Aeson.FromJSON errorInfo
@@ -360,7 +405,7 @@ instance
     parseJSON
         :: Aeson.Value
         -> Aeson.Parser (Rfc7807Error errorType errorInfo context)
-    parseJSON = Aeson.withObject typeName (parseJSON defaultEncodingOptions)
+    parseJSON = Aeson.withObject typeName (parseObject defaultEncodingOptions)
       where
         typeName :: String
         typeName =
@@ -368,9 +413,16 @@ instance
 
 -- | Parse JSON value into 'Rfc7807Error'. Reason for taking 'Aeson.Object'
 -- instead of 'Aeson.Value' is that it allows us to define serialisation for
--- our own data types with extra fields without while keeping RFC7807
+-- our own data types with extra fields while preserving RFC7807 message
 -- structure.
-parseJSON
+--
+-- === Usage example
+--
+-- @
+-- 'Aeson.withObject' \"ErrorResponse\" \\o ->
+--     'parseObject' 'defaultEncodingOptions' o
+-- @
+parseObject
     :: forall errorType errorInfo context
     .   ( Aeson.FromJSON errorType
         , Aeson.FromJSON errorInfo
@@ -379,7 +431,7 @@ parseJSON
     => EncodingOptions
     -> Aeson.Object
     -> Aeson.Parser (Rfc7807Error errorType errorInfo context)
-parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
+parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
     type_ <- o .: "type"
     title <- o .:? "title"
     status <- o .:? "status"
@@ -408,9 +460,68 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 
 -- }}} JSON Decoding ----------------------------------------------------------
 
+-- $intro
+--
+-- This module defines 'Rfc7807Error' data type that represents
+-- [RFC7807](https://tools.ietf.org/html/rfc7807) style response message along
+-- with few extensions that are not defined by the standard, but allowed by it.
+--
+-- The sandard specifies two serialisation formats:
+--
+-- 1. JSON (@application\/problem+json@) and
+--
+-- 2. XML (@application\/problem+xml@)
+--
+-- This package supports only JSON serialisation, but it should not be hard to
+-- build XML serialisation yourself, if required. We also expose few low-level
+-- definitions for cases when you want to build your own JSON serialisation
+-- that is compatible with the standard. If you're interested in that then best
+-- to look at [Usage Examples](#usage-examples) and [Encoding and Decoding
+-- ](#encoding-and-decoding) sections.
+--
+-- This package also provides Servant integration that is defined in a separate
+-- module "Servant.Server.RFC7807".
+--
+-- If you want to jump straight to using this then go directly to
+-- [Usage Examples section](#usage-examples).
+
 -- $usageExamples
 --
--- == Type Alias
+-- #usage-examples#
+--
+-- We start with a simple use case in [Type Alias section
+-- ](#usage-examples-type-alias) and we get progressively more complicated.
+-- Which one is best for you depends on many factors. There's a little guidance
+-- that we can give you in that regard, but maybe consider following:
+--
+-- * If you are just exploring or evaluating multiple options then maybe start
+--   with the simple example first.
+--
+-- * If you want to integrate RFC7807 style messages into existing system,
+--   while requiring backward compatibility, then go with the more complicated
+--   example. It will allow you to merge existing error responses with RFC7807
+--   style ones more easily.
+--
+-- Haskell\/GHC language extensions being used in the examples:
+--
+-- * @RecordWildCards@ and @NamedFieldPuns@ — please read this great article
+--   if you're not familiar with these extensions: [The Power of RecordWildCards
+--   by Dmitrii Kovanikov](https://kodimensional.dev/recordwildcards).
+--
+-- * @LambdaCase@ — allows us to use @\\case@ as a short hand for
+--   @\\x -> case x of@. See [GHC User's Guide — Lambda-case
+--   ](https://downloads.haskell.org/ghc/latest/docs/html/users_guide/glasgow_exts.html#lambda-case)
+--   for more information.
+--
+-- * @OverloadedStrings@ — allows us to define string literals for types like
+--   'Text' without needing to manually pack\/convert 'String' values. See
+--   [GHC User's Guide — Overloaded string literals
+--   ](https://downloads.haskell.org/ghc/latest/docs/html/users_guide/glasgow_exts.html#overloaded-string-literals)
+--   for more information.
+
+-- $usageExamplesTypeAlias
+--
+-- #usage-examples-type-alias#
 --
 -- The easiest way how to use 'Rfc7807Error' data type without always needing
 -- to pass all the type arguments is by creating a type alias like this:
@@ -425,24 +536,49 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 -- instance 'Aeson.ToJSON' ErrorType where
 --     toJSON = \\case
 --         DocumentNotFound ->
---             'Aeson.Text' \"https://example.com/docs/error#document-not-found\"
+--             'Aeson.Text' \"https:\/\/example.com\/docs\/error#document-not-found\"
 --         {- ... -}
 -- @
 --
--- == Newtype
+-- If you want custom value in @\"error\"@ field then you can either specify
+-- the type to the one you're using or leave @errorInfo@ type variable
+-- polymorphic. The later has the advantage that different types can be used
+-- for different REST API resources\/endpoints:
+--
+-- @
+-- type ErrorResponse errorInfo = 'Rfc7807Error' ErrorType errorInfo ()
+--
+-- data ErrorType
+--     = DocumentNotFound
+--     {- ... -}
+--
+-- instance 'Aeson.ToJSON' ErrorType where
+--     toJSON = \\case
+--         DocumentNotFound ->
+--             -- The URL doesn't have to be absolute. See description of
+--             -- 'type_' field of 'Rfc7807Error' for more information.
+--             'Aeson.Text' \"https:\/\/example.com\/docs\/error#document-not-found\"
+--         {- ... -}
+-- @
+
+-- $usageExamplesNewtype
 --
 -- While it is possible to use 'Rfc7807Error' directly, using newtype allows to
 -- be more flexible with how things are encoded. If you're expecting your use
 -- cases to evolve over time it is good to start with something like this:
 --
 -- @
--- -- | See \"Type Alias\" section for \@ErrorType\@ example.
+-- -- | See [\"Type Alias\"](#usage-examples-type-alias) section for \@ErrorType\@ example.
 -- data ErrorType
 --   = {- ... -}
 --
 -- newtype ErrorResponse = ErrorResponse
 --     { errorResponse :: 'Rfc7807Error' ErrorType () ()
 --     }
+--
+-- -- Following encoding example is very simple, basicaly the same thing as the
+-- -- default 'Rfc7807Error' encoding. However, it's a template that when
+-- -- copied allows us to adjust bits that we want different.
 --
 -- errorResponseEncodingOptions :: 'EncodingOptions'
 -- errorResponseEncodingOptions = 'defaultEncodingOptions'
@@ -458,10 +594,10 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 -- instance 'Aeson.FromJSON' ErrorResponse where
 --     'Aeson.parseJSON' :: ErrorResponse -> 'Aeson.Value'
 --     'Aeson.parseJSON' = 'Aeson.withObject' \"ErrorResponse\" \\o ->
---          ErrorResponse <$> 'parseJSON' errorResponseEncodingOptions o
+--          ErrorResponse <$> 'parseObject' errorResponseEncodingOptions o
 -- @
---
--- == Extra Fields Example
+
+-- $usageExamplesExtraFieldsExample
 --
 -- This is an elaboration of the previous \"Newtype\" example. We will use
 -- @errorInfo@ and @context@ type arguments of 'Rfc7807Error' to include more
@@ -485,23 +621,72 @@ parseJSON EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --     { errorResponse :: 'Rfc7807Error' ErrorType e ErrorContext
 --     }
 --
+-- -- Following serialisation example is just one of many possibilities. What
+-- -- it illustrates is how much flexibility we have. Not only we can rename
+-- -- fields through 'extensionFieldName', we can also play with the encoding
+-- -- to get something that is more suitable for our system.
+--
+-- -- | What we'll do is serialise the \@ErrorContext\@ manually. To be able to
+-- -- do that we need to tell 'toKeyValue' and 'parseObject' to ignore the
+-- -- extension field.
+-- --
+-- -- Another thing that we'll do is that we'll rename the @\"error\"@ field to
+-- -- @\"error_message\"@. This is one of those things that are useful when
+-- -- we are changing existing error responses.
 -- errorResponseEncodingOptions :: 'EncodingOptions'
 -- errorResponseEncodingOptions = 'defaultEncodingOptions'
+--     { 'omitExtensionField' = \\case
+--         'ErrorField' -> False
+--         'ContextField' -> True
+--
+--     , 'extensionFieldName' = \\case
+--         'ErrorField' -> \"error_message\"
+--         name -> 'extensionFieldName' 'defaultEncodingOptions' name
+--     }
 --
 -- instance 'Aeson.ToJSON' => 'Aeson.ToJSON' (ErrorResponse e) where
 --     'Aeson.toJSON' :: ErrorResponse -> 'Aeson.Value'
---     'Aeson.toJSON' ErrorResponse{..} =
---          'Aeson.object' . 'toKeyValue' errorResponseEncodingOptions
+--     'Aeson.toJSON' ErrorResponse{errorResponse} = 'Aeson.Object'
+--         ( 'toKeyValue' errorResponseEncodingOptions errorResponse
+--         -- We'll take everything that's in context and put it directly into
+--         -- the top-level JSON object.
+--         --
+--         -- The downside of this approach is that we need to be careful not
+--         -- to redefine already existing fields. What we could do is change
+--         -- the field names. It is quite common to use \"@fieldName\" or
+--         -- similar convention for metadata.
+--         --
+--         -- If we go with custom data type we can then examine if it's JSON
+--         -- object or not. If not we can instead put it into the \"context\"
+--         -- field as a kind of a default.
+--         <> context errorResponse
+--         )
 --     {- ... -}
 --
 -- instance 'Aeson.FromJSON' e => 'Aeson.FromJSON' (ErrorResponse e) where
 --     'Aeson.parseJSON' :: ErrorResponse -> 'Aeson.Value'
 --     'Aeson.parseJSON' = 'Aeson.withObject' \"ErrorResponse\" \\o ->
---          ErrorResponse <$> 'parseJSON' errorResponseEncodingOptions o
+--          errorResponse <- 'parseObject' errorResponseEncodingOptions o
+--
+--          -- Now we'll take all the fields that are not part of RFC7807 or
+--          -- \"error\" and put them into context.
+--          let context = flip filterWithKey o \\k _v ->
+--                  k `notElem` parsedFields
+--
+--          pure ErrorResponse
+--              { errorResponse = errorResponse{context}
+--              }
+--        where
+--          parsedFields =
+--              -- These hardcoded values are okay since RFC7807 defines the
+--              -- names and we cannot change them.
+--              [ \"type\", \"title\", \"status\", \"detail\", \"instance\"
+--              , 'extensionFieldName' 'ErrorField'
+--              ]
 -- @
 --
 -- At this point we may want to provide few helper functions for constructing
 -- @ErrorResponse@ (also known as smart constructors) to fit in nicely with the
 -- rest of our code base and HTTP framework we are using. You may want to look
--- at "Servant.RFC7807" module, even if you're using a different framework. It
--- should give you few ideas on how to proceed.
+-- at "Servant.Server.RFC7807" module, even if you're using a different
+-- framework. It should give you few ideas on how to proceed.

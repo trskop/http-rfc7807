@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c26d7b02886c8bdfc7075f42170d9be4fcb6080ca0a0e8d437677fc938c75a06
+-- hash: 1e7911ad15708ea768e7ebd467c2d7c6d48b26243705a0ebf9dafcf8510509dd
 
 name:           http-rfc7807
 version:        0.1.0.0
@@ -26,6 +26,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
+    ChangeLog.md
 
 source-repository head
   type: git

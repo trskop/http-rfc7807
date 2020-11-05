@@ -28,10 +28,12 @@ module Servant.Server.RFC7807
     )
   where
 
+import Data.Function (($))
 import Data.List.NonEmpty (NonEmpty((:|)))
 import Data.Maybe (Maybe(Just))
 import Data.Proxy (Proxy)
 import Data.Semigroup ((<>))
+import Data.String (fromString)
 
 import qualified Data.Aeson as Aeson (FromJSON, ToJSON, encode)
 import Network.HTTP.Media ((//), (/:), renderHeader)
@@ -117,10 +119,17 @@ rfc7807ServerError
     -- return type if @errorType@, @errorInfo@, and @context@ can be encoded
     -- into JSON.
     -> ServerError
-rfc7807ServerError ctype serverError@ServerError{errHTTPCode, errHeaders} t f =
+rfc7807ServerError
+  ctype
+  serverError@ServerError{errHTTPCode, errHeaders, errReasonPhrase}
+  errorType'
+  f =
     serverError
         { errBody =
-            mimeRender ctype (f (rfc7807Error t){status = Just errHTTPCode})
+            mimeRender ctype $ f (rfc7807Error errorType')
+                { status = Just errHTTPCode
+                , title = Just (fromString errReasonPhrase)
+                }
 
         , errHeaders = errHeaders
             <>  [ (hContentType, renderHeader (contentType ctype))

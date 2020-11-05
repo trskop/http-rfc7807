@@ -28,7 +28,7 @@ import Servant.API as Servant (JSON)
 import Servant.Server as Servant
 import qualified Test.HUnit.Lang as HUnit
   ( HUnitFailure(HUnitFailure)
-  , FailureReason(ExpectedButGot, Reason)
+  , formatFailureReason
   )
 import qualified Test.Hspec.Expectations.Json as Json (shouldBeJson)
 --import Test.QuickCheck.Instances ()
@@ -195,11 +195,4 @@ shouldBeJson actual expected = hUnitToTasty (Json.shouldBeJson actual expected)
 -- is preserved.
 hUnitToTasty :: Assertion -> Assertion
 hUnitToTasty = handle \(HUnit.HUnitFailure src reason) ->
-    throwIO $ HUnitFailure src case reason of
-        HUnit.Reason msg ->
-            msg
-
-        HUnit.ExpectedButGot preface expected actual ->
-            maybe "" (<> "\n") preface
-            <>   "expected: " <> expected
-            <> "\n but got: " <> actual
+    throwIO $ HUnitFailure src (HUnit.formatFailureReason reason)

@@ -17,17 +17,22 @@ module Main
 import Prelude
 
 import Data.Maybe (isJust)
+import Data.Proxy (Proxy(Proxy))
 
 import Data.Aeson ((.=))
 import qualified Data.Aeson as Aeson
 import Data.Text (Text)
+import Network.HTTP.Types (hContentType)
+import Servant.API as Servant (JSON)
+import Servant.Server as Servant
 import Test.Hspec.Expectations.Json (shouldBeJson)
 --import Test.QuickCheck.Instances ()
 import Test.Tasty (TestName, TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit ({-(@?=),-} testCase{-, assertEqual-})
+import Test.Tasty.HUnit ({-(@?=),-} testCase, assertEqual, assertFailure)
 --import Test.Tasty.QuickCheck (testProperty)
 
-import Network.HTTP.RFC7807
+import Network.HTTP.RFC7807 (Rfc7807Error(..))
+import Servant.Server.RFC7807 (ProblemJSON, rfc7807ServerError)
 
 
 main :: IO ()
@@ -35,8 +40,67 @@ main = defaultMain $ testGroup "Tests"
     [ testGroup "Network.HTTP.RFC7807"
         [ testDefaultSerialisation
         ]
+
     , testGroup "Servant.Server.RFC7807"
-        [
+        [ testCase "err400, JSON" do
+            let actual =
+                    rfc7807ServerError @(Rfc7807Error Text () ())
+                        (Proxy @Servant.JSON) Servant.err400 "/errors#400" id
+
+            assertEqual "HTTP status code hasn't changed"
+                (Servant.errHTTPCode Servant.err400)
+                (Servant.errHTTPCode actual)
+            assertEqual "HTTP reason phrase hasn't changed"
+                (Servant.errReasonPhrase Servant.err400)
+                (Servant.errReasonPhrase actual)
+            assertEqual "Content-Type is present and is\
+                \ application/json;charset=utf-8"
+                (Just "application/json;charset=utf-8")
+                (hContentType `lookup` Servant.errHeaders actual)
+
+            case Aeson.eitherDecode (Servant.errBody actual) of
+                Left err ->
+                    assertFailure
+                        ( "HTTP response body is valid JSON, but we got:\n"
+                        <> err
+                        )
+
+                Right actualJson ->
+                    actualJson `shouldBeJson` Aeson.object
+                    [ "type" .= Aeson.String "/errors#400"
+                    , "status" .= Servant.errHTTPCode Servant.err400
+                    , "title" .= Servant.errReasonPhrase Servant.err400
+                    ]
+
+        , testCase "err500, ProblemJSON" do
+            let actual =
+                    rfc7807ServerError @(Rfc7807Error Text () ())
+                        (Proxy @ProblemJSON) Servant.err500 "/errors#500" id
+
+            assertEqual "HTTP status code hasn't changed"
+                (Servant.errHTTPCode Servant.err500)
+                (Servant.errHTTPCode actual)
+            assertEqual "HTTP reason phrase hasn't changed"
+                (Servant.errReasonPhrase Servant.err500)
+                (Servant.errReasonPhrase actual)
+            assertEqual "Content-Type is present and is\
+                \ application/json;charset=utf8"
+                (Just "application/problem+json;charset=utf-8")
+                (hContentType `lookup` Servant.errHeaders actual)
+
+            case Aeson.eitherDecode (Servant.errBody actual) of
+                Left err ->
+                    assertFailure
+                        ( "HTTP response body is valid JSON, but we got:\n"
+                        <> err
+                        )
+
+                Right actualJson ->
+                    actualJson `shouldBeJson` Aeson.object
+                        [ "type" .= Aeson.String "/errors#500"
+                        , "status" .= Servant.errHTTPCode Servant.err500
+                        , "title" .= Servant.errReasonPhrase Servant.err500
+                        ]
         ]
     ]
 

@@ -108,7 +108,8 @@ instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
 --                }
 -- @
 rfc7807ServerError
-    :: (MimeRender ctype body)
+    :: forall body ctype errorType errorInfo context
+    .  (MimeRender ctype body)
     => Proxy ctype
     -- ^ Media type to use when encoding the error response body. This allows
     -- us to select appropriate mime type, e.g. 'Servant.API.ContentTypes.JSON'

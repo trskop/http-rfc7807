@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 31ff663e1db6eb5ce1c51bdec4504de59a9d87225c9a4052382cec7633c603db
+-- hash: cd05cbf137c913b178b8fa2b96e9b5c36c84856d55b6f4975b74c7434198b43f
 
 name:           http-rfc7807
 version:        0.1.0.0
@@ -67,6 +67,9 @@ test-suite command-wrapper-tests
     , call-stack >=0.2.0 && <1
     , hspec-expectations-json >=1.0.0.0 && <2
     , http-rfc7807
+    , http-types >=0.12.2 && <1
+    , servant >=0.16 && <1
+    , servant-server >=0.16 && <1
     , tasty >=1.2.3 && <2
     , tasty-hunit >=0.10.0.2 && <1
     , text >=1.2.3.0 && <2

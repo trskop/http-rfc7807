@@ -7,6 +7,10 @@ For latest version of this document see [`ChangeLog.md on GitHub`](https://githu
   still override it as before, but this is a breaking change as it changes the
   expected output.
 
+* (**breaking change**) Type variable `body` is now first in the definition of
+  `rfc7807ServerError`. If you've used `TypeApplications` when calling
+  `rfc7807ServerError` function then this may be a breaking change for you.
+
 * Documentation updates
 
 ### 0.1.0.0

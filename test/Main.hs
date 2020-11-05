@@ -1,6 +1,6 @@
 -- |
 -- Module:      Main
--- Description: TODO: Module synopsis
+-- Description: Unit tests for Haskell implementation of RFC7807 style responses
 -- Copyright:   (c) 2020 Peter Trško
 -- License:     BSD3
 --
@@ -8,7 +8,7 @@
 -- Stability:   experimental
 -- Portability: GHC specific language extensions.
 --
--- TODO: Module description.
+-- Unit tests for Haskell implementation of RFC7807 style responses.
 module Main
     ( main
     )
@@ -34,6 +34,9 @@ main :: IO ()
 main = defaultMain $ testGroup "Tests"
     [ testGroup "Network.HTTP.RFC7807"
         [ testDefaultSerialisation
+        ]
+    , testGroup "Servant.Server.RFC7807"
+        [
         ]
     ]
 
@@ -74,10 +77,9 @@ testDefaultSerialisation = testGroup "Default serialisation"
             ]
         }
 
-    -- Missing values were strategically chosen to belong to have one among
-    -- fields defined by the standard and one among the extension fields.  As
-    -- the logic is uniform we are able to verify both classes at the same
-    -- time.
+    -- Missing values were strategically chosen to have one among fields
+    -- defined by the standard and one among the extension fields.  As the
+    -- logic is uniform we are able to verify both classes at the same time.
     , testDefaultSerialisationCase "Few empty values sample" Rfc7807Error
         { type_ = "https://example.com/docs/error" :: Text
         , title = Just "Not so detailed error"

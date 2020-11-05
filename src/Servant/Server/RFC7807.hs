@@ -18,6 +18,14 @@ module Servant.Server.RFC7807
     -- * Mime Type @application\/problem+json@
     , ProblemJSON
 
+    -- * Usage Examples
+    --
+    -- $usageExamples
+
+    -- ** Direct Use Example
+    --
+    -- $directUseExample
+
     -- * Re-exported
     --
     -- | When using 'Rfc7807Error' in more complex way, please, depend on
@@ -87,7 +95,7 @@ instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
 --     -- ...
 --
 -- instance 'Aeson.ToJSON' ErrorType where
---     'Aeson.toJSON' = \\case
+--     toJSON = \\case
 --         ValidationError ->
 --              'Aeson.String' \"/errors#validation-error\"
 --
@@ -113,11 +121,16 @@ rfc7807ServerError
     -> (Rfc7807Error errorType errorInfo context -> body)
     -- ^ Modify the 'Rfc7807Error' type to your hearts desire.
     --
+    -- The @'Rfc7807Error' errorType errorInfo context@ given to this function
+    -- will have @type@, @title@, and @status@ set. Values for @title@ and
+    -- @status@ are taken from Servant's 'ServerError'. It is highly advised
+    -- to modify the @title@ to something more useful.
+    --
     -- Reason for the return type to be polymorphic (i.e. @body@) is that we
     -- may want to use a newtype to use a different encoding. This still allows
     -- us to use the @'Rfc7807Error' errorType errorInfo context@ type as a
     -- return type if @errorType@, @errorInfo@, and @context@ can be encoded
-    -- into JSON.
+    -- into JSON. In other words, 'Data.Function.id' is a valid fit.
     -> ServerError
 rfc7807ServerError
   ctype
@@ -145,3 +158,92 @@ rfc7807ServerError
 -- use. This is especially true if we are migrating existing error responses.
 -- Another benefit of the abstract way it's defined is that we can potentially
 -- use different encoding or serialisation libraries.
+--
+-- If you're interested in using this module right away then jump straight to
+-- [Usage Examples section](#usage-examples).
+
+-- $usageExamples
+--
+-- #usage-examples#
+--
+-- These examples focus on usage of 'rfc7807ServerError', to see examples more
+-- related to the 'Rfc7807Error' messages go to "Network.HTTP.RFC7807" module.
+--
+-- Haskell\/GHC language extensions being used in the examples:
+--
+-- * @RecordWildCards@ and @NamedFieldPuns@ — please read this great article
+--   if you're not familiar with these extensions: [The Power of RecordWildCards
+--   by Dmitrii Kovanikov](https://kodimensional.dev/recordwildcards).
+--
+-- * @OverloadedStrings@ — allows us to define string literals for types like
+--   'Text' without needing to manually pack\/convert 'String' values. See
+--   [GHC User's Guide — Overloaded string literals
+--   ](https://downloads.haskell.org/ghc/latest/docs/html/users_guide/glasgow_exts.html#overloaded-string-literals)
+--   for more information.
+
+-- $directUseExample
+--
+-- This example is intended to illustrate how we can start producing RFC7807
+-- style responses without too much fuss. No complex abstractions, no custom
+-- wrappers for 'Rfc7807Error', no custom serialisation, and no extra @context@.
+--
+-- @
+-- -- | Servant definition of an endpoint.
+-- type SomeEndpoint = {- ... -}
+--
+-- -- | This code is not complex enough to actually need to be in a function,
+-- -- but it makes some things more obious and easier to change.
+-- badRequest
+--     :: ( MonadError 'ServerError' m
+--        , 'Aeson.ToJSON' errorType
+--        , 'Aeson.ToJSON' errorInfo
+--        )
+--     => errorType
+--     -> ( 'Rfc7807Error' errorType errorInfo ()
+--        -> 'Rfc7807Error' errorType errorInfo ()
+--        )
+--     -> m a
+-- badRequest errorType =
+--     throwError . 'rfc7807ServerError' (Proxy \@'ProblemJSON') 'err400' errorType
+--
+-- -- | See "Network.HTTP.RFC7807" module for more information and examples on
+-- -- how to use and define data types to be used for @errorType@.
+-- data ErrorType
+--     = ValidationError
+--     -- ...
+--
+-- instance 'Aeson.ToJSON' ErrorType where
+--     toJSON = \\case
+--         ValidationError ->
+--              'Data.Aeson.String' \"/errors#some-endpoint-validation-error\"
+--
+-- someHandler :: 'ServerT' SomeEndpoint m
+-- someHandler request = do
+--     response <- doTheEndpointStuffBasedOn request
+--
+--     case response of
+--         Success r ->
+--             pure r
+--
+--         InvalidRequest error_@DataValidationFailed ->
+--             badRequest ValidationError \\e -> e
+--                 { title = \"Request data validation failed\"
+--                 , detail = \"One or more members of request's 'data' field\\
+--                     \\ failed validation, see 'error' field\"
+--
+--                 -- If we've used something like \@{\"error\": TheError}\@
+--                 -- before switching to RFC7807 then this will be backward
+--                 -- compatible. We can also play with the serialisation if we
+--                 -- need to preserve backward compatibility. It won't work
+--                 -- all the time though.
+--                 --
+--                 -- Huge downside of this approach is that the error is
+--                 -- directly serialised into JSON. API contract can easily be
+--                 -- affected by changes that seem unrelated. Please, consider
+--                 -- having a separate data type for this purpose or use JSON
+--                 -- combinators.
+--                 , error_
+--                 }
+--
+--         {- ... -}
+-- @

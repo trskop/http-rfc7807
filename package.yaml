@@ -70,6 +70,8 @@ tests:
     dependencies:
       - *this
 
+      - HUnit >=1.6.0.0 && <1.7
+      # ^ Same bounds as `hspec-expectations-json` has.
       - call-stack >=0.2.0 && <1
       - hspec-expectations-json >=1.0.0.0 && <2
       # ^ At the moment of writing 1.0.0.0 is the only version available.

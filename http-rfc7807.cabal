@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cd05cbf137c913b178b8fa2b96e9b5c36c84856d55b6f4975b74c7434198b43f
+-- hash: c8ceff28c20448fd002f59919364d0910cf843f18e936a43357d9c7be3e9a508
 
 name:           http-rfc7807
 version:        0.1.0.0
@@ -62,7 +62,8 @@ test-suite command-wrapper-tests
   default-extensions: BlockArguments DeriveGeneric DerivingStrategies DuplicateRecordFields FlexibleContexts FlexibleInstances InstanceSigs LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings RecordWildCards ScopedTypeVariables TypeApplications
   ghc-options: -Wall -Wcompat -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson >=1.4.1.0 && <2
+      HUnit >=1.6.0.0 && <1.7
+    , aeson >=1.4.1.0 && <2
     , base >=4.12 && <5
     , call-stack >=0.2.0 && <1
     , hspec-expectations-json >=1.0.0.0 && <2

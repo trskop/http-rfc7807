@@ -16,6 +16,7 @@ module Main
 
 import Prelude
 
+import Control.Exception (handle, throwIO)
 import Data.Maybe (isJust)
 import Data.Proxy (Proxy(Proxy))
 
@@ -25,10 +26,21 @@ import Data.Text (Text)
 import Network.HTTP.Types (hContentType)
 import Servant.API as Servant (JSON)
 import Servant.Server as Servant
-import Test.Hspec.Expectations.Json (shouldBeJson)
+import qualified Test.HUnit.Lang as HUnit
+  ( HUnitFailure(HUnitFailure)
+  , FailureReason(ExpectedButGot, Reason)
+  )
+import qualified Test.Hspec.Expectations.Json as Json (shouldBeJson)
 --import Test.QuickCheck.Instances ()
 import Test.Tasty (TestName, TestTree, defaultMain, testGroup)
-import Test.Tasty.HUnit ({-(@?=),-} testCase, assertEqual, assertFailure)
+import Test.Tasty.HUnit
+  ( Assertion
+  , HasCallStack
+  , assertEqual
+  , assertFailure
+  , testCase
+  , HUnitFailure(..)
+  )
 --import Test.Tasty.QuickCheck (testProperty)
 
 import Network.HTTP.RFC7807 (Rfc7807Error(..))
@@ -175,3 +187,19 @@ testDefaultSerialisationCase name v@Rfc7807Error{..} = testCase name do
             , ["context" .= context | isJust context]
             ]
         )
+
+shouldBeJson :: HasCallStack => Aeson.Value -> Aeson.Value -> Assertion
+shouldBeJson actual expected = hUnitToTasty (Json.shouldBeJson actual expected)
+
+-- | Converts @HUnit@ exception to @tasty-hunit@ exception so that formatting
+-- is preserved.
+hUnitToTasty :: Assertion -> Assertion
+hUnitToTasty = handle \(HUnit.HUnitFailure src reason) ->
+    throwIO $ HUnitFailure src case reason of
+        HUnit.Reason msg ->
+            msg
+
+        HUnit.ExpectedButGot preface expected actual ->
+            maybe "" (<> "\n") preface
+            <>   "expected: " <> expected
+            <> "\n but got: " <> actual

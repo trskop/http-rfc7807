@@ -1,5 +1,5 @@
 name: &this http-rfc7807
-version: 0.1.0.0
+version: !include ./version.yaml
 synopsis: |
   RFC7807 style response messages
 description: |

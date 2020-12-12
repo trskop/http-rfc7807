@@ -23,6 +23,17 @@ Content-Length: 251
 }
 ```
 
+
+## Table of Contents
+
+(Links work on GitHub, but not on Hackage.)
+
+* [What does this package do?](#what-does-this-package-do)
+* [Why would I want to use this?](#why-would-i-want-to-use-this)
+* [When would I want to use something else?](#when-would-i-want-to-use-something-else)
+* [Usage examples](#usage-examples)
+
+
 ## What does this package do?
 
 This library provides a data type `Rfc7807Error` that represents such error
@@ -31,8 +42,10 @@ representation of user defined fields. See module `Network.HTTP.RFC7807` for
 documentation.
 
 In addition the package provides basic support for [`servant-server` package
-](https://hackage.haskell.org/package/servant-server). See module
-`Servant.Server.RFC7807` for documentation.
+](https://hackage.haskell.org/package/servant-server). See
+[`Servant.Server.RFC7807` module documentation
+](https://hackage.haskell.org/package/http-rfc7807/docs/Servant-Server-RFC7807.html)
+for more information and usage examples.
 
 
 ## Why would I want to use this?
@@ -64,6 +77,11 @@ APIs. Using this one has few advantages:
 
 * Probably more...
 
+There's an interesting article "[REST API Error Handling - Problem Details
+Response by Guy Levin published on 23rd of May, 2018
+](https://blog.restcase.com/rest-api-error-handling-problem-details-response/)"
+that compares various stiles of error responses AKA problem details responses.
+
 
 ## When would I want to use something else?
 
@@ -79,3 +97,14 @@ needs. Some examples of that:
   to preserve backward compatibility.
 
 * Probably more...
+
+
+## Usage examples
+
+General usage (not tied to Servant) is documented in [module
+`Network.HTTP.RFC7807` in section Usage Examples
+](https://hackage.haskell.org/package/http-rfc7807/docs/Network-HTTP-RFC7807.html#usage-examples).
+
+Basic usage with Servant (actually @servant-server@) is documented in
+[module `Servant.Server.RFC7807` in section Usage Examples
+](https://hackage.haskell.org/package/http-rfc7807/docs/Servant-Server-RFC7807.html#usage-examples).

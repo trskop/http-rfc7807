@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 -- |
 -- Module:      Servant.Server.RFC7807
 -- Description: Servant support for RFC7807 style error response messages
@@ -33,6 +34,18 @@ module Servant.Server.RFC7807
     -- detailed usage examples can be found in "Network.HTTP.RFC7807" module
     -- documentation.
     , Rfc7807Error(..)
+
+#if !MIN_VERSION_servant_server(0,16,0)
+    -- * Servant 0.15 Compatibility
+    --
+    -- | In @servant-server@ version 0.16 'ServantErr' was renamed to
+    -- 'ServerError'. This package provides compatiblity for that version, but
+    -- it may be dropped in the near future.
+    --
+    -- For more information see [@servant-server-1.16 ChangeLog
+    -- ](https://hackage.haskell.org/package/servant-server-0.16/changelog).
+    , ServerError
+#endif
     )
   where
 
@@ -81,6 +94,12 @@ instance Aeson.ToJSON a => MimeRender ProblemJSON a where
 -- | 'eitherDecodeLenient'
 instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
     mimeUnrender _ = eitherDecodeLenient
+
+#if !MIN_VERSION_servant_server(0,16,0)
+-- | Compatibility with newer @servant-server@ versions as 'ServantErr' was
+-- renamed to 'ServerError' in version 0.16.
+type ServerError = ServantErr
+#endif
 
 -- | Construct Servant 'ServerError' with RFC7807 style response body.
 --
@@ -135,7 +154,11 @@ rfc7807ServerError
     -> ServerError
 rfc7807ServerError
   ctype
+#if MIN_VERSION_servant_server(0,16,0)
   serverError@ServerError{errHTTPCode, errHeaders, errReasonPhrase}
+#else
+  serverError@ServantErr{errHTTPCode, errHeaders, errReasonPhrase}
+#endif
   errorType'
   f =
     serverError

@@ -56,10 +56,12 @@ library:
     # using, but servant requires newer version (>=0.12.2).
     - http-media >=0.7.1.3 && <1
     # ^ Lower bound based on servant.
-    - servant >=0.16 && <1
+    - servant >=0.15 && <1
     # ^ Version bounds to match servant-server.
-    - servant-server >=0.16 && <1
-    # ^ ServantErr was renamed to ServerError in version 0.16.
+    - servant-server >=0.15 && <1
+    # ^ ServantErr was renamed to ServerError in version 0.16, we provide
+    # compabibility via CPP with version 0.15. We are planning to drop it in
+    # next major release.
     - text >=1.2.3.0 && <2
     # ^ Lower bound based on servant.
 
@@ -85,8 +87,8 @@ tests:
       # Same dependencies as the library:
       - aeson >=1.4.1.0 && <2
       - http-types >=0.12.2 && <1
-      - servant >=0.16 && <1
-      - servant-server >=0.16 && <1
+      - servant >=0.15 && <1
+      - servant-server >=0.15 && <1
       - text >=1.2.3.0 && <2
 
     ghc-options: ["-threaded", "-rtsopts", "-with-rtsopts=-N"]

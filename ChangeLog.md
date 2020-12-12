@@ -11,7 +11,14 @@ For latest version of this document see [`ChangeLog.md on GitHub`](https://githu
   `rfc7807ServerError`. If you've used `TypeApplications` when calling
   `rfc7807ServerError` function then this may be a breaking change for you.
 
+* (**change**) Support `servant-server-0.15` in addition to currently supported
+  versions. We are planning to drop the support once again in next major
+  release. See [@servant-server-1.16 ChangeLog
+  ](https://hackage.haskell.org/package/servant-server-0.16/changelog) to see
+  what it entails.
+
 * Documentation updates
+
 
 ### 0.1.0.0
 

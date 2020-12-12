@@ -50,7 +50,7 @@ for more information and usage examples.
 
 ## Why would I want to use this?
 
-[![Oh my](https://raw.githubusercontent.com/trskop/http-rfc7807/f9d81307fff768ebe55eff7b009310aefc9af233/doc/nixcraft-tweet-with-obscure-error-response.png)
+[![Oh my](./doc/nixcraft-tweet-with-obscure-error-response.png)
 ](https://twitter.com/nixcraft/status/1321898390209273856)
 
 There are many ways common ways how API error responses are structured in HTTP

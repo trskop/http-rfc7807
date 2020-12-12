@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ac4b2354f87ad6ae1472687b9260907841d2a9a202c5d3e8a199020b51bac391
+-- hash: 81f1ad1976b7e75902fd442b0e1b09b0e6295bb53eba518d35aaddff3a0ec408
 
 name:           http-rfc7807
-version:        0.1.0.0
+version:        0.2.0.0
 synopsis:       RFC7807 style response messages
 
 description:    [RFC7807 — Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807)

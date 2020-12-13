@@ -103,7 +103,7 @@ instance Aeson.FromJSON a => MimeUnrender ProblemJSON a where
 --     {- ... -}
 --     unless validationSuccessful do
 --         throwError $ 'rfc7807ServerError' (Proxy \@'ProblemJSON') 'err400' ValidationError \\e ->
---             e  { 'title' = \"Request failed to pass data validation\"
+--             e  { title = \"Request failed to pass data validation\"
 --                -- ...
 --                }
 -- @
@@ -117,8 +117,8 @@ rfc7807ServerError
     -> ServerError
     -- ^ One of Servant error values e.g. 'err400'.
     -> errorType
-    -- ^ Value of the 'type_' field (@\"type\"@ in JSON), the only mandatory
-    -- parameter for RFC7807 content.
+    -- ^ Value of the @type_@ field of 'Rfc7807Error' (@\"type\"@ in JSON), the
+    -- only mandatory parameter for RFC7807 content.
     -> (Rfc7807Error errorType errorInfo context -> body)
     -- ^ Modify the 'Rfc7807Error' type to your hearts desire.
     --
@@ -190,7 +190,7 @@ rfc7807ServerError
 --
 -- @
 -- -- | Servant definition of an endpoint.
--- type SomeEndpoint = {- ... -}
+-- type SomeEndpoint = -- ...
 --
 -- -- | This code is not complex enough to actually need to be in a function,
 -- -- but it makes some things more obious and easier to change.

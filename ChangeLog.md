@@ -4,6 +4,8 @@ For latest version of this document see [`ChangeLog.md on GitHub`](https://githu
 
 * (**breaking change**) Removed support for `servant-server-0.15`.
 
+* Documentation fixes, mostly Haddock syntax related.
+
 
 ### 0.2.0.0
 

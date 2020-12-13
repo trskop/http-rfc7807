@@ -76,7 +76,7 @@ import Data.Text (Text)
 
 
 -- | Based on [RFC7807](https://tools.ietf.org/html/rfc7807) with few
--- additional fields @'error_' :: errorInfo@ and @'context' :: context@.
+-- additional fields @error_ :: errorInfo@ and @context :: context@.
 --
 -- Meaning of individual type parameters:
 --
@@ -184,7 +184,7 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
     --
     -- === Notes:
     --
-    -- In JSON this filed ins named only @\"instance\"@.
+    -- In JSON this filed is named only @\"instance\"@.
 
     , error_ :: Maybe errorInfo
     -- ^ (__optional__, __extension__) An additional representation of the
@@ -195,7 +195,8 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
     -- === Notes:
     --
     -- How the field is named in the resulting JSON object is controlled by
-    -- 'extensionFieldName', but by default it is @\"error\"@.
+    -- @extensionFieldName@ of 'EncodingOptions' and the default provided by
+    -- 'defaultEncodingOptions' is @\"error\"@.
 
     , context :: Maybe context
     -- ^ (__optional__, __extension__) Extra information for the purposes of
@@ -204,12 +205,13 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
     -- === Notes:
     --
     -- How the field is named in the resulting JSON object is controlled by
-    -- 'extensionFieldName', but by default it is @\"context\"@.
+    -- @extensionFieldName@ of 'EncodingOptions' and the default provided by
+    -- 'defaultEncodingOptions' is @\"context\"@.
     }
   deriving stock (Eq, Generic, Show)
 
--- | Constructor for 'Rfc7807Error' that set's only 'type_' and everything else
--- is set to 'Nothing'.
+-- | Constructor for 'Rfc7807Error' that set's only @type_@ field value and
+-- everything else is set to 'Nothing'.
 --
 -- === Usage Example
 --
@@ -217,7 +219,7 @@ data Rfc7807Error errorType errorInfo context = Rfc7807Error
 -- error response you can provide to your client:
 --
 -- @
--- ('rfc7807Error' \"/errors#not-found\"){'status' = 404}
+-- ('rfc7807Error' \"/errors#not-found\"){status = 404}
 -- @
 rfc7807Error :: errorType -> Rfc7807Error errorType errorInfo context
 rfc7807Error type_ = Rfc7807Error
@@ -230,16 +232,16 @@ rfc7807Error type_ = Rfc7807Error
     , context = Nothing
     }
 
--- | Enum representing the extension fields 'error_' and 'context' that are not
--- defined by RFC7807.
+-- | Enum representing the extension fields @error_@ and @context@ of
+-- 'Rfc7807Error' that are not defined by RFC7807.
 --
 -- This allows us to reference the field in 'EncodingOptions' and later in
 -- 'toKeyValue' and 'parseObject' without resolving to using 'Text'.
 data ExtensionField
     = ErrorField
-    -- ^ Represents the name of the 'error_' field of 'Rfc7807Error' data type.
+    -- ^ Represents the name of the @error_@ field of 'Rfc7807Error' data type.
     | ContextField
-    -- ^ Represents the name of the 'context' field of 'Rfc7807Error' data type.
+    -- ^ Represents the name of the @context@ field of 'Rfc7807Error' data type.
   deriving stock (Eq, Generic, Show)
 
 -- {{{ JSON Encoding ----------------------------------------------------------
@@ -285,7 +287,7 @@ data EncodingOptions = EncodingOptions
     --
     -- [If the function returns @False@]: then the specified record field is
     -- included in the serialised output. However, if the value of that field
-    -- is 'Nothing' and 'omitNothingFields' is set to @True@ then the field
+    -- is 'Nothing' and @omitNothingFields@ is set to @True@ then the field
     -- will once again be omitted from the resulting JSON object.
     --
     -- === Notes:
@@ -301,9 +303,9 @@ data EncodingOptions = EncodingOptions
     , extensionFieldName :: ExtensionField -> Text
     -- ^ How should the extension fields be named?
     --
-    -- Fields 'error_' and 'context' are not defined by RFC7807 and as such
-    -- their names may be adjusted depending on our particular needs and
-    -- conventions. This function allows exactly that.
+    -- Fields @error_@ and @context@ of 'Rfc7807Error' are not defined by
+    -- RFC7807 and as such their names may be adjusted depending on our
+    -- particular needs and conventions. This function allows exactly that.
     --
     -- === Notes:
     --
@@ -316,8 +318,11 @@ data EncodingOptions = EncodingOptions
 --
 -- @
 -- defaultEncodingOptions = 'EncodingOptions'
---     { 'omitNothingFields' = True
---     , 'omitExtensionField' = const False
+--     { omitNothingFields = True
+--     , omitExtensionField = const False
+--     , extensionFieldName = \\case
+--         'ErrorField'   -> \"error\"
+--         'ContextField' -> \"context\"
 --     }
 -- @
 defaultEncodingOptions :: EncodingOptions
@@ -556,7 +561,7 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --     toJSON = \\case
 --         DocumentNotFound ->
 --             -- The URL doesn't have to be absolute. See description of
---             -- 'type_' field of 'Rfc7807Error' for more information.
+--             -- @type_@ field of 'Rfc7807Error' for more information.
 --             'Aeson.String' \"https:\/\/example.com\/docs\/error#document-not-found\"
 --         {- ... -}
 -- @
@@ -582,7 +587,7 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --
 -- errorResponseEncodingOptions :: 'EncodingOptions'
 -- errorResponseEncodingOptions = 'defaultEncodingOptions'
---     { 'omitExtensionField' = const True
+--     { omitExtensionField = const True
 --     }
 --
 -- instance 'Aeson.ToJSON' ErrorResponse where
@@ -623,8 +628,9 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --
 -- -- Following serialisation example is just one of many possibilities. What
 -- -- it illustrates is how much flexibility we have. Not only we can rename
--- -- fields through 'extensionFieldName', we can also play with the encoding
--- -- to get something that is more suitable for our system.
+-- -- fields through @extensionFieldName@ of 'EncodingOptions', we can also
+-- -- play with the encoding -- to get something that is more suitable for our
+-- -- system.
 --
 -- -- | What we'll do is serialise the \@ErrorContext\@ manually. To be able to
 -- -- do that we need to tell 'toKeyValue' and 'parseObject' to ignore the
@@ -635,13 +641,13 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 -- -- we are changing existing error responses.
 -- errorResponseEncodingOptions :: 'EncodingOptions'
 -- errorResponseEncodingOptions = 'defaultEncodingOptions'
---     { 'omitExtensionField' = \\case
+--     { omitExtensionField = \\case
 --         'ErrorField' -> False
 --         'ContextField' -> True
 --
---     , 'extensionFieldName' = \\case
+--     , extensionFieldName = \\case
 --         'ErrorField' -> \"error_message\"
---         name -> 'extensionFieldName' 'defaultEncodingOptions' name
+--         name -> extensionFieldName 'defaultEncodingOptions' name
 --     }
 --
 -- instance 'Aeson.ToJSON' => 'Aeson.ToJSON' (ErrorResponse e) where
@@ -681,7 +687,7 @@ parseObject EncodingOptions{omitExtensionField, extensionFieldName} o = do
 --              -- These hardcoded values are okay since RFC7807 defines the
 --              -- names and we cannot change them.
 --              [ \"type\", \"title\", \"status\", \"detail\", \"instance\"
---              , 'extensionFieldName' 'ErrorField'
+--              , extensionFieldName 'ErrorField'
 --              ]
 -- @
 --

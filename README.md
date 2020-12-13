@@ -36,10 +36,13 @@ Content-Length: 251
 
 ## What does this package do?
 
-This library provides a data type `Rfc7807Error` that represents such error
-responses. It is designed to be extensible and to allow alternative
-representation of user defined fields. See module `Network.HTTP.RFC7807` for
-documentation.
+This library provides a data type [`Rfc7807Error`
+](https://hackage.haskell.org/package/http-rfc7807/docs/Network-HTTP-RFC7807.html#t:Rfc7807Error)
+that represents such error responses. It is designed to be extensible and to
+allow alternative representation of user defined fields. See module
+[`Network.HTTP.RFC7807`
+](https://hackage.haskell.org/package/http-rfc7807/docs/Network-HTTP-RFC7807.html)
+for documentation.
 
 In addition the package provides basic support for [`servant-server` package
 ](https://hackage.haskell.org/package/servant-server). See
@@ -85,8 +88,8 @@ that compares various stiles of error responses AKA problem details responses.
 
 ## When would I want to use something else?
 
-This response structure may not serve your needs if it's clashing with your
-needs. Some examples of that:
+This response structure may not serve your needs if it's clashing with them.
+Some examples of that:
 
 * Your needs are in direct conflict with the [RFC7807 — Problem Details for
   HTTP APIs](https://tools.ietf.org/html/rfc7807) standard. For example, fields

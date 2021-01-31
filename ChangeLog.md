@@ -4,7 +4,11 @@ For latest version of this document see [`ChangeLog.md on GitHub`](https://githu
 
 * (**breaking change**) Removed support for `servant-server-0.15`.
 
-* Documentation fixes, mostly Haddock syntax related.
+* (**change**) Introduces module `Network.WAI.RFC7807` which provides
+  `rfc7807Response`, a way how to create WAI `Response` in similar way as
+  `rfc7807ServerError`.
+
+* (**change**) Documentation fixes, mostly Haddock syntax related.
 
 
 ### 0.2.0.0

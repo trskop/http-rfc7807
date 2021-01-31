@@ -14,7 +14,7 @@ license: BSD3
 license-file: LICENSE
 author: Peter Trško
 maintainer: peter.trsko@gmail.com
-copyright: (c) 2020 Peter Trško
+copyright: (c) 2020-2021 Peter Trško
 category: Web, Servant
 
 extra-source-files:
@@ -62,6 +62,8 @@ library:
     # ^ ServantErr was renamed to ServerError in version 0.16.
     - text >=1.2.3.0 && <2
     # ^ Lower bound based on servant.
+    - wai >=3.2.1.2 && <4
+    # ^ Lower bound based on servant-server.
 
 tests:
   command-wrapper-tests:

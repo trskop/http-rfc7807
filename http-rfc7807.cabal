@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6a323cdf95ab6baea71bc355b0d75127f84e02b190aa622e4938bb9deb5f5013
+-- hash: 44f6128d5aaacd79e8e8dd1f297081d27f76711c67b1f7f1be63dff32a2f8f38
 
 name:           http-rfc7807
 version:        0.2.0.0
@@ -20,7 +20,7 @@ homepage:       https://github.com/trskop/http-rfc7807#readme
 bug-reports:    https://github.com/trskop/http-rfc7807/issues
 author:         Peter Trško
 maintainer:     peter.trsko@gmail.com
-copyright:      (c) 2020 Peter Trško
+copyright:      (c) 2020-2021 Peter Trško
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -35,6 +35,7 @@ source-repository head
 library
   exposed-modules:
       Network.HTTP.RFC7807
+      Network.Wai.RFC7807
       Servant.Server.RFC7807
   other-modules:
       Paths_http_rfc7807
@@ -50,6 +51,7 @@ library
     , servant >=0.16 && <1
     , servant-server >=0.16 && <1
     , text >=1.2.3.0 && <2
+    , wai >=3.2.1.2 && <4
   default-language: Haskell2010
 
 test-suite command-wrapper-tests

@@ -47,12 +47,12 @@ import qualified Data.Aeson as Aeson (FromJSON, ToJSON, encode)
 import Network.HTTP.Media ((//), (/:), renderHeader)
 import Network.HTTP.Types (hContentType)
 import Servant.API.ContentTypes
-  ( Accept(contentTypes)
-  , MimeRender(mimeRender)
-  , MimeUnrender(mimeUnrender)
-  , contentType
-  , eitherDecodeLenient
-  )
+    ( Accept(contentTypes)
+    , MimeRender(mimeRender)
+    , MimeUnrender(mimeUnrender)
+    , contentType
+    , eitherDecodeLenient
+    )
 import Servant.Server
 
 import Network.HTTP.RFC7807 (Rfc7807Error(..), rfc7807Error)

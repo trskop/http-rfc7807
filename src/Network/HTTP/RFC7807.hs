@@ -300,7 +300,7 @@ data EncodingOptions = EncodingOptions
     -- extension fields for which the function returns @True@. Ignored
     -- extension fields will always be set to 'Nothing'.
 
-    , extensionFieldName :: ExtensionField -> Text
+    , extensionFieldName :: ExtensionField -> Aeson.Key
     -- ^ How should the extension fields be named?
     --
     -- Fields @error_@ and @context@ of 'Rfc7807Error' are not defined by
@@ -379,7 +379,7 @@ toKeyValue EncodingOptions{..} Rfc7807Error{..} = mconcat
     , extField ContextField context
     ]
   where
-    field :: Aeson.ToJSON a => Text -> Maybe a -> kv
+    field :: Aeson.ToJSON a => Aeson.Key -> Maybe a -> kv
     field name value =
         mwhen (not omitNothingFields || isJust value)
             (name .= value)

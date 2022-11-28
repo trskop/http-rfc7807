@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 44f6128d5aaacd79e8e8dd1f297081d27f76711c67b1f7f1be63dff32a2f8f38
+-- hash: a2d71b2ee3f8ed70f417c42fb3520ef5387868a9aa06794325489c517b6e47e1
 
 name:           http-rfc7807
 version:        0.2.0.0
@@ -41,10 +41,25 @@ library
       Paths_http_rfc7807
   hs-source-dirs:
       src
-  default-extensions: BlockArguments DeriveGeneric DerivingStrategies DuplicateRecordFields FlexibleContexts FlexibleInstances InstanceSigs LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings RecordWildCards ScopedTypeVariables TypeApplications
+  default-extensions:
+      BlockArguments
+      DeriveGeneric
+      DerivingStrategies
+      DuplicateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      InstanceSigs
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoImplicitPrelude
+      OverloadedStrings
+      RecordWildCards
+      ScopedTypeVariables
+      TypeApplications
   ghc-options: -Wall -Wcompat
   build-depends:
-      aeson >=1.4.1.0 && <2
+      aeson >=1.4.1.0
     , base >=4.12 && <5
     , http-media >=0.7.1.3 && <1
     , http-types >=0.12.2 && <1
@@ -61,11 +76,26 @@ test-suite command-wrapper-tests
       Paths_http_rfc7807
   hs-source-dirs:
       test
-  default-extensions: BlockArguments DeriveGeneric DerivingStrategies DuplicateRecordFields FlexibleContexts FlexibleInstances InstanceSigs LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings RecordWildCards ScopedTypeVariables TypeApplications
+  default-extensions:
+      BlockArguments
+      DeriveGeneric
+      DerivingStrategies
+      DuplicateRecordFields
+      FlexibleContexts
+      FlexibleInstances
+      InstanceSigs
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoImplicitPrelude
+      OverloadedStrings
+      RecordWildCards
+      ScopedTypeVariables
+      TypeApplications
   ghc-options: -Wall -Wcompat -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HUnit >=1.6.0.0 && <1.7
-    , aeson >=1.4.1.0 && <2
+    , aeson >=1.4.1.0
     , base >=4.12 && <5
     , call-stack >=0.2.0 && <1
     , hspec-expectations-json >=1.0.0.0 && <2

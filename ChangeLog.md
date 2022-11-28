@@ -2,6 +2,8 @@ For latest version of this document see [`ChangeLog.md on GitHub`](https://githu
 
 ### HEAD (unreleased changes)
 
+* (**change**) Update aeson dependency to v2.
+
 * (**breaking change**) Removed support for `servant-server-0.15`.
 
 * (**change**) Introduces module `Network.WAI.RFC7807` which provides

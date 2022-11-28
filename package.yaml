@@ -49,7 +49,7 @@ library:
   source-dirs: src
 
   dependencies:
-    - aeson >=1.4.1.0 && <2
+    - aeson >=1.4.1.0
     # ^ Lower bound based on servant.
     - http-types >=0.12.2 && <1
     # ^ Version 0.7.0 is the first one that provides hContentType that we are
@@ -85,7 +85,7 @@ tests:
 #     - tasty-quickcheck
 
       # Same dependencies as the library:
-      - aeson >=1.4.1.0 && <2
+      - aeson >=1.4.1.0
       - http-types >=0.12.2 && <1
       - servant >=0.16 && <1
       - servant-server >=0.16 && <1
